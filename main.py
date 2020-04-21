@@ -17,7 +17,9 @@ idx_moves = {
     1 : 'Paper',
     2 : 'Scissors'
 }
+
 mat_games = np.zeros((3,3))
+
 mat_games[moves['Rock'], moves['Scissors']] = 1
 mat_games[moves['Paper'], moves['Rock']] = 1
 mat_games[moves['Scissors'], moves['Paper']] = 1
@@ -25,7 +27,7 @@ mat_games[moves['Rock'], moves['Paper']] = -1
 mat_games[moves['Paper'], moves['Scissors']] = -1
 mat_games[moves['Scissors'], moves['Rock']] = -1    
 
-sequence_moves = [0, 1, 2]
+sequence_moves = [0, 1, 2, 1, 0, 2, 2]
 
 class Player :
     def __init__(self, move):
