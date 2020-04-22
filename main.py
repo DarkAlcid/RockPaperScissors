@@ -40,7 +40,7 @@ class Player :
         self.move = move
 
 def eval_genomes(genomes, config):
-    computer_old = [0]
+    computer_old = [random.randint(0,2), random.randint(0,2), random.randint(0,2)]
     move_number = len(sequence_moves)
     score = 0
 
@@ -64,7 +64,7 @@ def eval_genomes(genomes, config):
             break
         
         for x, player in enumerate(players):            
-            output = nets[x].activate((computer_old[-1], computer_old[-2]))
+            output = nets[x].activate((computer_old[-1], computer_old[-2], computer_old[-3]))
 
             move = np.argmax(output)
             player.play_move(move)
@@ -105,14 +105,14 @@ def simulate_trained_network(sequence_moves, winner, config):
     win = 0
     lose = 0
     draw = 0
-    computer_old = [0, 0]
+    computer_old = [random.randint(0,2), random.randint(0,2), random.randint(0,2)]
     move_number = len(sequence_moves)
     winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
 
     for i in range(1, 101) : 
         computer_old.append(sequence_moves[(i-1) % move_number])
         computer = sequence_moves[i % move_number]
-        output = winner_net.activate((computer_old[-1], computer_old[-2]))
+        output = winner_net.activate((computer_old[-1], computer_old[-2], computer_old[-3]))
         move = np.argmax(output) 
         results = mat_games[move, computer]
         if results == 0:
@@ -157,13 +157,14 @@ def play_trained_network(winner, config):
     lose = 0
     draw = 0
     winner_net = neat.nn.FeedForwardNetwork.create(winner, config)
-    player_old = [0]
+    player_old = [random.randint(0,2), random.randint(0,2), random.randint(0,2)]
+
     i = 1
     while True:
         player_move = int(input("Rock (0), Paper (1), Scissors(2) ?"))
         if player_move in range(0, 3):
             player_old.append(player_move)
-            output = winner_net.activate((player_old[-1], player_old[-2]))
+            output = winner_net.activate((player_old[-1], player_old[-2], player_old[-3]))
             move = np.argmax(output) 
             results = mat_games[player_move, move]
             if results == 0:
