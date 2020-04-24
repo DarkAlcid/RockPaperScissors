@@ -46,12 +46,12 @@ def eval_genomes(genomes, config):
 
     nets = []
     ge = []
-    players = []
+    nns = []
 
     for _, g in genomes :
         net = neat.nn.FeedForwardNetwork.create(g, config)
         nets.append(net)
-        players.append(Player(0))
+        nns.append(Player(0))
         g.fitness = 0
         ge.append(g)
     i = 0
@@ -60,22 +60,22 @@ def eval_genomes(genomes, config):
         computer_old.append(sequence_moves[(i-1) % move_number])
         computer = sequence_moves[i % move_number]
         
-        if len(players) == 0:
+        if len(nns) == 0:
             break
         
-        for x, player in enumerate(players):            
+        for x, nn in enumerate(nns):            
             output = nets[x].activate((computer_old[-1], computer_old[-2], computer_old[-3]))
 
             move = np.argmax(output)
-            player.play_move(move)
+            nn.play_move(move)
 
-            result = mat_games[player.move, computer]
+            result = mat_games[nn.move, computer]
 
             ge[x].fitness += result
 
             if result == -1:
                 ge[x].fitness += result * 10
-                players.pop(x)
+                nns.pop(x)
                 nets.pop(x)
                 ge.pop(x)
             if result == 1:
@@ -84,6 +84,54 @@ def eval_genomes(genomes, config):
 
         if score > 100:
             break
+
+def eval_genomes_with_player(genomes, config):
+    player_old = [random.randint(0,2), random.randint(0,2), random.randint(0,2)]
+    move_number = len(sequence_moves)
+    score = 0
+
+    nets = []
+    ge = []
+    nns = []
+
+    for _, g in genomes :
+        net = neat.nn.FeedForwardNetwork.create(g, config)
+        nets.append(net)
+        nns.append(Player(0))
+        g.fitness = 0
+        ge.append(g)
+
+    while True:
+        player_move = player_move = int(input("Rock (0), Paper (1), Scissors(2) ?"))
+        if player_move in range(2):
+            player_old.append(player_move)
+            if len(nns) == 0:
+                break
+            
+            for x, nn in enumerate(nns):            
+                output = nets[x].activate((player_old[-2], player_old[-3], player_old[-4]))
+
+                move = np.argmax(output)
+                nn.play_move(move)
+
+                result = mat_games[nn.move, player_move]
+
+                ge[x].fitness += result
+
+                if result == -1:
+                    ge[x].fitness += result * 10
+                    nns.pop(x)
+                    nets.pop(x)
+                    ge.pop(x)
+                if result == 1:
+                    score += 1
+                    ge[x].fitness += result * 5
+
+            if score > 100:
+                break
+        else :
+            break
+    
 
 def training(config, winner_filename):
     # Create population based on the config we set
@@ -98,7 +146,6 @@ def training(config, winner_filename):
     pickle.dump(winner, open(winner_filename, 'wb'))
 
     print('\nBest genome:\n{!s}'.format(winner))
-
 
 def simulate_trained_network(sequence_moves, winner, config):
     print('Simulating 100 games with trained network :')
