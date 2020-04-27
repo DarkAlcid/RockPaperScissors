@@ -4,7 +4,7 @@ import random
 import os
 import neat
 import pickle
-# import visualize
+import visualize
 
 
 moves = {
@@ -27,8 +27,8 @@ mat_games[moves['Rock'], moves['Paper']] = -1
 mat_games[moves['Paper'], moves['Scissors']] = -1
 mat_games[moves['Scissors'], moves['Rock']] = -1    
 
-sequence_moves = [0, 1, 2, 1, 0, 2, 2]
-
+sequence_moves = [0, 1, 2, 1, 1, 2, 0, 0, 1, 2]
+# sequence_moves = [0, 1, 2]
 class Player :
     def __init__(self, move):
         self.move = move
@@ -59,13 +59,21 @@ def eval_genomes(genomes, config):
         i += 1
         computer_old.append(sequence_moves[(i-1) % move_number])
         computer = sequence_moves[i % move_number]
-        
+        computer_ohe = np.zeros((3,3))
+        computer_ohe[0, computer_old[-1]] = 1
+        computer_ohe[1, computer_old[-2]] = 1
+        computer_ohe[2, computer_old[-3]] = 1
         if len(nns) == 0:
             break
         
         for x, nn in enumerate(nns):            
-            output = nets[x].activate((computer_old[-1], computer_old[-2], computer_old[-3]))
-
+            # output = nets[x].activate((computer_old[-1], computer_old[-2], computer_old[-3]))
+            output = nets[x].activate((
+                computer_ohe[0, 0], computer_ohe[0, 1], computer_ohe[0, 2],
+                computer_ohe[1, 0], computer_ohe[1, 1], computer_ohe[1, 2], 
+                computer_ohe[2, 0], computer_ohe[2, 1], computer_ohe[2, 2] 
+            ))
+            
             move = np.argmax(output)
             nn.play_move(move)
 
@@ -144,6 +152,14 @@ def training(config, winner_filename):
 
     winner = p.run(eval_genomes, 100)
     pickle.dump(winner, open(winner_filename, 'wb'))
+    node_names = {-1:'Rock i-1', -2: 'Paper i-1', -3:'Scissors i-1',
+        -4:'Rock i-2', -5: 'Paper i-2', -6:'Scissors i-2',
+        -7:'Rock i-3', -8: 'Paper i-3', -9:'Scissors i-3',
+         0:'Rock', 1:'Paper', 2:'Scissors'
+    }
+    visualize.draw_net(config, winner, True, node_names = node_names)
+    visualize.plot_stats(stats, ylog=False, view=True)
+    visualize.plot_species(stats, view=True)
 
     print('\nBest genome:\n{!s}'.format(winner))
 
@@ -159,7 +175,17 @@ def simulate_trained_network(sequence_moves, winner, config):
     for i in range(1, 101) : 
         computer_old.append(sequence_moves[(i-1) % move_number])
         computer = sequence_moves[i % move_number]
-        output = winner_net.activate((computer_old[-1], computer_old[-2], computer_old[-3]))
+        computer_ohe = np.zeros((3,3))
+        computer_ohe[0, computer_old[-1]] = 1
+        computer_ohe[1, computer_old[-2]] = 1
+        computer_ohe[2, computer_old[-3]] = 1
+
+        # output = winner_net.activate((computer_old[-1], computer_old[-2], computer_old[-3]))
+        output = winner_net.activate((
+                computer_ohe[0, 0], computer_ohe[0, 1], computer_ohe[0, 2],
+                computer_ohe[1, 0], computer_ohe[1, 1], computer_ohe[1, 2], 
+                computer_ohe[2, 0], computer_ohe[2, 1], computer_ohe[2, 2] 
+        ))
         move = np.argmax(output) 
         results = mat_games[move, computer]
         if results == 0:
