@@ -191,7 +191,7 @@ def training_with_player(config, winner_filename):
         train_player_move = int(input("Rock (0), Paper (1), Scissors(2) ?"))
         if train_player_move not in range(3):
             break
-        winner = p.run(eval_genomes_with_player, 1)
+        winner = p.run(eval_genomes_with_player, 10)
         train_player_old.append(train_player_move)
         best_player = winner
     
