@@ -3,7 +3,7 @@
 fitness_criterion     = max
 ## What fitness level we need before we terminate the program
 ## If it passed this threshold, no generation are generated anymore
-fitness_threshold     = 200
+fitness_threshold     = 1000
 ## Number of individuals in a population
 pop_size              = 50
 ## Create a random new population when all species become extinct due to stagnation
@@ -49,7 +49,7 @@ enabled_mutate_rate     = 0.01
 
 ## Type of neural network
 feed_forward            = True
-initial_connection      = full
+initial_connection      = full_direct
 
 # node add/remove rates
 node_add_prob           = 0.2
